@@ -1,0 +1,30 @@
+---
+import { safeVideoUrl, safeLinkUrl } from "../lib/content";
+interface Props { p: any }
+const { p } = Astro.props;
+const video = safeVideoUrl(p.video_url);
+const doc = safeLinkUrl(p.doc_url);
+const tech: string[] = (p.technologies ?? []).slice(0, 4);
+---
+<article class="card">
+  <div class="card-media">
+    {p.cover_url
+      ? <img src={p.cover_url} alt="" loading="lazy" decoding="async" width="640" height="360" />
+      : <div class="card-ph" aria-hidden="true"><span>{p.title.slice(0, 1).toUpperCase()}</span></div>}
+    {p.category && <span class="badge">{p.category.name}</span>}
+  </div>
+  <div class="card-body">
+    <h3><a class="card-link" href={`/projects/${p.slug}`}>{p.title}</a></h3>
+    {p.summary && <p class="card-sum">{p.summary}</p>}
+    {tech.length > 0 && <ul class="tech">{tech.map((t) => <li>{t}</li>)}</ul>}
+    <div class="card-actions">
+      <span class="more">View project <span aria-hidden="true">→</span></span>
+      <div class="card-btns">
+      {video && <a class="btn sm demo" href={video} target="_blank" rel="noopener noreferrer">
+        <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path fill="currentColor" d="M8 5v14l11-7z" /></svg> Watch Solution Demo Video</a>}
+      {doc && <a class="btn sm doc" href={doc} target="_blank" rel="noopener noreferrer">
+        <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path fill="currentColor" d="M6 2h8l6 6v14H6zm7 1.5V9h5.5zM8.5 13h7v1.5h-7zm0 3.5h7V18h-7z" /></svg> Project Documentation</a>}
+      </div>
+    </div>
+  </div>
+</article>

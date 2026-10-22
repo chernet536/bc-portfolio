@@ -1,0 +1,9 @@
+---
+import { initials, profile } from "../lib/profile";
+interface Props { src: string | null; size?: "lg" | "md" }
+const { src, size = "lg" } = Astro.props;
+---
+<div class={`portrait ${size}`}>
+  {src ? <img src={src} alt={`Portrait of ${profile.name}`} width="480" height="600" fetchpriority="high" decoding="async" />
+       : <div class="portrait-ph" aria-hidden="true">{initials(profile.name)}</div>}
+</div>

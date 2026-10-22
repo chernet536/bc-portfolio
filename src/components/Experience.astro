@@ -1,0 +1,17 @@
+---
+import { profile } from "../lib/profile";
+interface Props { compact?: boolean }
+const { compact = false } = Astro.props;
+---
+<ol class="timeline">
+  {profile.experience.map((r) => (
+    <li>
+      <div class="role-head">
+        <h3>{r.title}</h3>
+        <p class="role-meta"><strong>{r.company}</strong><span class="period">{r.period}</span></p>
+      </div>
+      <p class="role-sum">{r.summary}</p>
+      {!compact && <ul class="role-list">{r.bullets.map((b) => <li>{b}</li>)}</ul>}
+    </li>
+  ))}
+</ol>

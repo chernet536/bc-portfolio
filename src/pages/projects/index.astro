@@ -1,0 +1,19 @@
+---
+import Base from "../../layouts/Base.astro";
+import ProjectCard from "../../components/ProjectCard.astro";
+import { listProjects, getCategories } from "../../lib/content";
+Astro.response.headers.set("Cache-Control", "public, s-maxage=60, stale-while-revalidate=300");
+const sp = Astro.url.searchParams, q = sp.get("q") ?? "", category = sp.get("category") ?? "";
+const [{ items, error }, cats] = await Promise.all([listProjects({ q, category }), getCategories("project")]);
+---
+<Base title="Projects" description="Business Central and ERP projects.">
+  <header class="page-head"><p class="eyebrow">Selected work</p><h1>Projects</h1>
+    <p class="lede">ERP implementations, configurations and Business Central development.</p></header>
+  <form class="search" role="search" method="get"><input name="q" value={q} aria-label="Search projects" placeholder="Search projects" />
+    {category && <input type="hidden" name="category" value={category} />}<button>Search</button></form>
+  <ul class="chips filter"><li><a href="/projects" aria-current={!category}>All</a></li>
+    {cats.map((c) => <li><a href={`/projects?category=${c.slug}`} aria-current={category === c.slug}>{c.name}</a></li>)}</ul>
+  {error ? <p class="err" role="alert">Projects could not be loaded. Try again shortly.</p> :
+   items.length === 0 ? <p class="empty">No projects found.</p> :
+  <div class="grid">{items.map((p) => <ProjectCard p={p} />)}</div>}
+</Base>

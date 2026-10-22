@@ -1,0 +1,11 @@
+# Pings Supabase every 3 days so the free project is not paused for inactivity.
+# Needs repository secrets SUPABASE_URL and SUPABASE_ANON_KEY (both are public-safe values).
+name: keepalive
+on:
+  schedule: [{ cron: "17 6 */3 * *" }]
+  workflow_dispatch:
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - run: curl -fsS "${{ secrets.SUPABASE_URL }}/rest/v1/categories?select=id&limit=1" -H "apikey: ${{ secrets.SUPABASE_ANON_KEY }}"

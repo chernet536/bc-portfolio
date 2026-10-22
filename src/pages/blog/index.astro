@@ -1,0 +1,22 @@
+---
+import Base from "../../layouts/Base.astro";
+import { listPosts, getCategories, fmtDate } from "../../lib/content";
+Astro.response.headers.set("Cache-Control", "public, s-maxage=60, stale-while-revalidate=300");
+const sp = Astro.url.searchParams;
+const page = Math.max(1, parseInt(sp.get("page") ?? "1") || 1), q = sp.get("q") ?? "", category = sp.get("category") ?? "";
+const [{ items, pages, error }, cats] = await Promise.all([listPosts({ page, q, category }), getCategories("post")]);
+const href = (p: number) => `/blog?${new URLSearchParams({ ...(q && { q }), ...(category && { category }), page: String(p) })}`;
+---
+<Base title="Blog" description="Articles on Dynamics 365 Business Central.">
+  <h1>Blog</h1>
+  <form class="search" role="search" method="get"><input name="q" value={q} aria-label="Search articles" placeholder="Search articles" />
+    {category && <input type="hidden" name="category" value={category} />}<button>Search</button></form>
+  <ul class="chips"><li><a href="/blog" aria-current={!category}>All</a></li>
+    {cats.map((c) => <li><a href={`/blog?category=${c.slug}`} aria-current={category === c.slug}>{c.name}</a></li>)}</ul>
+  {error ? <p class="err" role="alert">Articles could not be loaded. Try again shortly.</p> :
+   items.length === 0 ? <p>No articles found.</p> :
+  <ul class="ledger">{items.map((p) => <li><a class="t" href={`/blog/${p.slug}`}>{p.title}</a>
+    <span class="meta">{fmtDate(p.published_at!)} · {p.reading_minutes} min</span><p>{p.excerpt}</p></li>)}</ul>}
+  <nav class="pager" aria-label="Pagination">{page > 1 ? <a href={href(page - 1)}>Newer</a> : <span />}
+    <span>Page {page} of {pages}</span>{page < pages ? <a href={href(page + 1)}>Older</a> : <span />}</nav>
+</Base>

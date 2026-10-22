@@ -1,0 +1,24 @@
+---
+import Base from "../layouts/Base.astro";
+import Portrait from "../components/Portrait.astro";
+import Experience from "../components/Experience.astro";
+import { profile } from "../lib/profile";
+import { getProfilePhoto } from "../lib/content";
+Astro.response.headers.set("Cache-Control", "public, s-maxage=60, stale-while-revalidate=300");
+const photo = await getProfilePhoto();
+---
+<Base title="About" description={`About ${profile.name}`} image={photo}>
+  <section class="hero about-hero">
+    <div class="hero-text">
+      <p class="eyebrow">About</p>
+      <h1>{profile.name}</h1>
+      <p class="lede">{profile.intro}</p>
+      <ul class="checks">{profile.highlights.map((h) => <li>{h}</li>)}</ul>
+      <p class="cta"><a class="btn" href="/contact">Get in touch</a><span class="social"><a href={profile.linkedin} target="_blank" rel="noopener noreferrer">LinkedIn</a></span></p>
+    </div>
+    <Portrait src={photo} />
+  </section>
+  <section id="experience"><div class="sec-head"><h2>Professional experience</h2></div><Experience /></section>
+  <section><div class="sec-head"><h2>Skills</h2></div><ul class="chips">{profile.expertise.map((e) => <li>{e}</li>)}</ul></section>
+  <section><div class="sec-head"><h2>Certifications</h2></div><ul class="checks">{profile.certifications.map((c) => <li>{c}</li>)}</ul></section>
+</Base>

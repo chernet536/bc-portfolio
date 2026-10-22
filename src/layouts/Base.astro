@@ -1,0 +1,43 @@
+---
+import "../styles/global.css";
+import { profile, initials } from "../lib/profile";
+interface Props { title: string; description?: string; image?: string | null; type?: string; noindex?: boolean }
+const { title, description = profile.intro, image, type = "website", noindex = false } = Astro.props;
+const site = Astro.site ?? new URL(Astro.url.origin);
+const canonical = new URL(Astro.url.pathname, site).href;
+const full = title.includes(profile.name) ? title : `${title} | ${profile.name}`;
+const nav = [["/", "Home"], ["/about", "About"], ["/projects", "Projects"], ["/blog", "Blog"], ["/contact", "Contact"]];
+const path = Astro.url.pathname;
+const icon = `data:image/svg+xml,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="14" fill="#0f766e"/><text x="32" y="42" font-family="Georgia,serif" font-size="28" font-weight="700" text-anchor="middle" fill="#fff">${initials(profile.name)}</text></svg>`)}`;
+---
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#0f766e" />
+  <title>{full}</title><meta name="description" content={description} />
+  <link rel="icon" href={icon} />
+  <link rel="canonical" href={canonical} />
+  {noindex && <meta name="robots" content="noindex, nofollow" />}
+  <meta property="og:title" content={full} /><meta property="og:description" content={description} />
+  <meta property="og:type" content={type} /><meta property="og:url" content={canonical} />
+  {image && <meta property="og:image" content={image} />}
+  <meta name="twitter:card" content={image ? "summary_large_image" : "summary"} />
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+  <header class="site"><div class="wrap">
+    <a class="brand" href="/"><span class="mark" aria-hidden="true">{initials(profile.name)}</span><strong>{profile.name}</strong></a>
+    <nav aria-label="Main">{nav.map(([h, l]) => <a href={h} aria-current={(h === "/" ? path === "/" : path.startsWith(h)) ? "page" : undefined}>{l}</a>)}</nav>
+  </div></header>
+  <main id="main" class="wrap"><slot /></main>
+  <footer class="site"><div class="wrap">
+    <p class="foot-name"><strong>{profile.name}</strong><span>{profile.headline}</span></p>
+    <p class="social">
+      <a href={profile.linkedin} target="_blank" rel="noopener noreferrer">LinkedIn</a>
+      <a href={`mailto:${profile.email}`}>Email</a>
+    </p>
+    <p class="copy">© {new Date().getFullYear()} {profile.name}</p>
+  </div></footer>
+</body>
+</html>

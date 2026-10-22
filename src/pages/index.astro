@@ -1,0 +1,54 @@
+---
+import Base from "../layouts/Base.astro";
+import Portrait from "../components/Portrait.astro";
+import ProjectCard from "../components/ProjectCard.astro";
+import Experience from "../components/Experience.astro";
+import { profile, erpYears } from "../lib/profile";
+import { listPosts, listProjects, getProfilePhoto, fmtDate } from "../lib/content";
+Astro.response.headers.set("Cache-Control", "public, s-maxage=60, stale-while-revalidate=300");
+const [{ items: projects }, { items: posts }, photo] = await Promise.all([listProjects({ limit: 6 }), listPosts({ limit: 3 }), getProfilePhoto()]);
+const years = erpYears();
+---
+<Base title={`${profile.name}, ${profile.headline}`} image={photo}>
+  <section class="hero">
+    <div class="hero-text">
+      <p class="eyebrow">{profile.headline}</p>
+      <h1>{profile.name}</h1>
+      <p class="lede">{profile.intro}</p>
+      <p class="cta">
+        <a class="btn" href="/contact">Get in touch</a>
+        <a class="btn ghost" href="/projects">View projects</a>
+        <span class="social"><a href={profile.linkedin} target="_blank" rel="noopener noreferrer">LinkedIn</a></span>
+      </p>
+    </div>
+    <Portrait src={photo} />
+  </section>
+
+  <section class="facts" aria-label="At a glance">
+    <div><b>{years}+</b><span>years in ERP</span></div>
+    <div><b>5</b><span>ERP modules owned</span></div>
+    <div><b>30%</b><span>less manual data entry via integrations</span></div>
+    <div><b>2</b><span>Business Central certifications</span></div>
+  </section>
+
+  <section>
+    <div class="sec-head"><h2>Projects</h2><a class="more" href="/projects">All projects <span aria-hidden="true">→</span></a></div>
+    {projects.length === 0 ? <p class="empty">Projects will appear here as soon as you publish them from the admin area.</p> :
+    <div class="grid">{projects.map((p) => <ProjectCard p={p} />)}</div>}
+  </section>
+
+  <section>
+    <div class="sec-head"><h2>Experience</h2><a class="more" href="/about#experience">Full experience <span aria-hidden="true">→</span></a></div>
+    <Experience compact />
+  </section>
+
+  {posts.length > 0 && <section>
+    <div class="sec-head"><h2>Recent writing</h2><a class="more" href="/blog">All articles <span aria-hidden="true">→</span></a></div>
+    <ul class="ledger">{posts.map((p) => <li><a class="t" href={`/blog/${p.slug}`}>{p.title}</a>
+      <span class="meta">{fmtDate(p.published_at!)}</span><p>{p.excerpt}</p></li>)}</ul></section>}
+
+  <section class="two-col">
+    <div><h2>Expertise</h2><ul class="chips">{profile.expertise.map((e) => <li>{e}</li>)}</ul></div>
+    <div><h2>Certifications</h2><ul class="checks">{profile.certifications.map((c) => <li>{c}</li>)}</ul></div>
+  </section>
+</Base>

@@ -1,0 +1,7 @@
+---
+import Base from "../../layouts/Base.astro";
+import AdminApp from "../../admin/AdminApp";
+Astro.response.headers.set("Cache-Control", "private, no-store");
+Astro.response.headers.set("X-Robots-Tag", "noindex, nofollow");
+---
+<Base title="Admin" noindex><AdminApp client:only="react" /></Base>

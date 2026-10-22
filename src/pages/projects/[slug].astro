@@ -1,0 +1,20 @@
+---
+import Base from "../../layouts/Base.astro";
+import { getProject, safeVideoUrl, safeLinkUrl } from "../../lib/content";
+import { highlightCode } from "../../lib/highlight";
+Astro.response.headers.set("Cache-Control", "public, s-maxage=60, stale-while-revalidate=300");
+const p = await getProject(Astro.params.slug ?? "");
+if (!p) return new Response(null, { status: 404 });
+const video = safeVideoUrl(p.video_url);
+const doc = safeLinkUrl(p.doc_url);
+const parts = [["Overview", p.description_html], ["Business problem", p.business_problem_html], ["Solution and architecture", p.solution_html], ["Technical implementation", p.implementation_html]];
+---
+<Base title={p.seo_title || p.title} description={p.seo_description || p.summary} image={p.cover_url}>
+  <article class="prose"><p class="eyebrow">{p.category ? p.category.name : "Project"}</p><h1>{p.title}</h1><p class="lede">{p.summary}</p>
+    {(video || doc) && <p class="btn-row">{video && <a class="btn demo" href={video} target="_blank" rel="noopener noreferrer"><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M8 5v14l11-7z" /></svg> Watch Solution Demo Video</a>}{doc && <a class="btn doc" href={doc} target="_blank" rel="noopener noreferrer"><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M6 2h8l6 6v16H6zm7 1.5V9h5.5zM8.5 13h7v1.5h-7zm0 3.5h7V18h-7z" /></svg> Project Documentation</a>}</p>}
+    {p.cover_url && <img class="cover" src={p.cover_url} alt="" />}
+    <ul class="chips">{p.technologies.map((t: string) => <li>{t}</li>)}{p.tags.map((t: any) => <li>{t.tag.name}</li>)}</ul>
+    {parts.filter(([, h]) => h).map(([t, h]) => <section><h2>{t}</h2><div set:html={highlightCode(h)} /></section>)}
+    {p.screenshots.length > 0 && <section><h2>Screenshots</h2>{p.screenshots.map((s: string) => <img class="cover" src={s} alt="Project screenshot" loading="lazy" />)}</section>}
+  </article>
+</Base>

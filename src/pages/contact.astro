@@ -1,0 +1,27 @@
+---
+import Base from "../layouts/Base.astro";
+import { profile } from "../lib/profile";
+import { validateContact } from "../lib/validation";
+import { getSupabase } from "../lib/supabase";
+let errors: Record<string, string> = {}, sent = false, failed = false, values: Record<string, string> = {};
+if (Astro.request.method === "POST") {
+  const f = Object.fromEntries(await Astro.request.formData());
+  const r = validateContact(f);
+  if (r.ok) {
+    const { error } = await getSupabase().from("messages").insert(r.value);
+    sent = !error; failed = !!error; values = error ? r.value : {};
+  } else if (r.spam) { sent = true; } else { errors = r.errors; values = { name: String(f.name ?? ""), email: String(f.email ?? ""), body: String(f.body ?? "") }; }
+}
+---
+<Base title="Contact" description="Send a message." noindex={Astro.request.method === "POST"}>
+  <h1>Contact</h1>
+  {sent && <p class="ok" role="status">Your message was saved and I will see it in my dashboard.</p>}
+  {failed && <p class="err" role="alert">The message could not be saved. Email me directly at <a href={`mailto:${profile.email}`}>{profile.email}</a>.</p>}
+  {!sent && <form method="post" novalidate>
+    <label for="name">Name</label><input id="name" name="name" value={values.name ?? ""} required maxlength="100" />{errors.name && <span class="err">{errors.name}</span>}
+    <label for="email">Email</label><input id="email" name="email" type="email" value={values.email ?? ""} required maxlength="200" />{errors.email && <span class="err">{errors.email}</span>}
+    <label for="body">Message</label><textarea id="body" name="body" rows="6" required maxlength="5000">{values.body ?? ""}</textarea>{errors.body && <span class="err">{errors.body}</span>}
+    <div aria-hidden="true" style="position:absolute;left:-999px"><label>Leave empty<input name="website" tabindex="-1" autocomplete="off" /></label></div>
+    <p><button>Send message</button></p></form>}
+  <p>Or write to <a href={`mailto:${profile.email}`}>{profile.email}</a>.</p>
+</Base>

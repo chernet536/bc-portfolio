@@ -1,0 +1,19 @@
+---
+import Base from "../../layouts/Base.astro";
+import { getPost, getRelatedPosts, fmtDate } from "../../lib/content";
+import { highlightCode } from "../../lib/highlight";
+Astro.response.headers.set("Cache-Control", "public, s-maxage=60, stale-while-revalidate=300");
+const post = await getPost(Astro.params.slug ?? "");
+if (!post) return new Response(null, { status: 404 });
+const related = await getRelatedPosts(post.category?.id ?? null, post.slug);
+---
+<Base title={post.seo_title || post.title} description={post.seo_description || post.excerpt} image={post.cover_url} type="article">
+  <article class="prose">
+    <h1>{post.title}</h1>
+    <p class="meta"><time datetime={post.published_at}>{fmtDate(post.published_at)}</time> · {post.reading_minutes} min read{post.category && <> · <a href={`/blog?category=${post.category.slug}`}>{post.category.name}</a></>}</p>
+    {post.cover_url && <img class="cover" src={post.cover_url} alt="" />}
+    <div set:html={highlightCode(post.content_html)} />
+    <ul class="chips">{post.tags.map((t: any) => <li>{t.tag.name}</li>)}</ul>
+  </article>
+  {related.length > 0 && <section><h2>Related articles</h2><ul>{related.map((r) => <li><a href={`/blog/${r.slug}`}>{r.title}</a></li>)}</ul></section>}
+</Base>
