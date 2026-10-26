@@ -8,5 +8,5 @@ export default defineConfig({
   integrations: [react()],
   // This site does not use Astro sessions; false removes the unused KV binding so deployment needs no extra setup.
   session: false,
-  site: process.env.PUBLIC_SITE_URL || "http://localhost:4321",
+  site: "https://chernet-tariku.com",
 });
